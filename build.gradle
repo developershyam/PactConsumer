@@ -1,0 +1,54 @@
+plugins {
+	id 'org.springframework.boot' version '2.3.1.RELEASE'
+	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+	id 'java'
+	id 'com.adarshr.test-logger' version '1.5.0'
+}
+
+group = 'com.consumer'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '14'
+
+project.buildDir = '/target'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter'
+	compile 'org.springframework.boot:spring-boot-starter-web:2.3.1.RELEASE'
+	
+	testCompile 'au.com.dius:pact-jvm-consumer-junit5:4.0.10'
+	
+	
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+		exclude group: 'com.vaadin.external.google', module: 'android-json'
+	}
+}
+
+test {
+    systemProperties['pact.rootDir'] = "$buildDir/pacts"
+	useJUnitPlatform()
+	
+	testlogger { theme 'mocha' }
+	beforeTest { descriptor-> logger.lifecycle("Running test: ${descriptor}")}
+	
+	testLogging {
+	
+	  afterSuite { desc, result -> 
+	    if(!desc.parent) { //will match outermost suite
+	      println """
+ -------------------------------------------------------------------
+   TEST RESULT: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)
+   Start Time : ${new Date(result.startTime).format("yyyy-MM-dd HH:mm:ss")}
+   End Time : ${new Date(result.endTime).format("yyyy-MM-dd HH:mm:ss")}
+ -------------------------------------------------------------------
+"""
+	     }
+	      
+	   }
+	
+	}
+}
